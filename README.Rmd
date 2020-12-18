@@ -1,0 +1,134 @@
+---
+title: "Looking at tweets by @year_progress 2019-2020"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+stub: "year-progress-tweets-viz"
+output:
+  github_document:
+    html_preview: true
+    toc: false
+    fig_width: 5
+    fig_height: 5
+    md_extensions: +emoji+bracketed_spans+inline_notes
+keywords: [lubridate, ggplot, twitter, api, dataviz]
+always_allow_html: true
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+
+library(dplyr)
+
+```
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+
+I was randomly interested in whether there might be patterns in the amount of interaction with tweets from the **@year_progress** bot during 2020 :scream:,
+and what the shape of the year might look like compared to 2019.
+
+
+This gave me a chance to review the current landscape of `R` clients for the twitter API :disappointed:.
+After doing this review, I decided it would be easier and more satisfying for me to script my own access to [v2 of the API][tw-api].
+
+[tw-api]: https://developer.twitter.com/en/docs/twitter-api/early-access
+
+
+This meant more practice with `httr`, error handling, working with lists with the frankly brilliant [`purrr` toolkit][purrr], and with writing functions.
+Happy as a :pig: in :poop:, _tbqhwy_.
+
+
+It's also chance for me to try various other things I haven't really used before:
+
+* Creating a GitHub README as an `.Rmd` file (this very file here),
+  instead of my usual `.md`, so I might incorporate some output charts
+* Using a couple of [Pandoc's Markdown extensions][pdmd] ^[1][1]^
+* GitHub Actions (set up using the `usethis` helper function)
+* Making _a whole actual package_ :package:, just for a little bit of fun like
+  this
+* Learning a bit more about testing with `testthat`
+* Yet more practice at package architecture and requirements,
+  and appeasing R CMD check
+* Doing some hopefully nice [dataviz]{.sparkle} :bar_chart: with `ggplot2`, which   I still don't feel like I have really used _well_ yet.
+  My charts usually look way too crappy for my liking.
+
+
+[1]: # "We've got md_extensions: +emoji+bracketed_spans+inline_notes going on in the yaml here"
+[purrr]: https://purrr.tidyverse.org/
+[pdmd]: https://pandoc.org/MANUAL.html#pandocs-markdown
+
+
+If you suspect that this whole idea was essentially driven by pre-Christmas/end-of-term task avoidance, angst and procrastination,
+you would be correct.
+
+
+
+```{r, get-dtf, eval = FALSE}
+# Set variables and run overall query -------------------------------------
+
+
+# Obtained originally by:
+# user_id <- get_user_id(username = "year_progress")
+# It isn't going to change, so once obtained just hardcode it:
+year_progress_id <- "3233484298"
+
+
+start_2019 <- "2019-01-01T00:00:00Z"
+
+# This doesn't work with the Twitter API
+# https://github.com/tidyverse/lubridate/issues/941
+# 
+# start_2019 <- lubridate::make_datetime(2019) %>% 
+#   lubridate::format_ISO8601(usetz = TRUE)
+
+
+# see `R/get_user_twetes.R` for how this works
+dtf <- get_user_twetes(user_id = year_progress_id, start = start_2019) %>%
+  compact() %>%
+  unpack_list()       # <- in `R/helpers.R`
+```
+
+
+
+```{r, load-dtf, include = FALSE}
+# myrmidon::save_it(dtf)
+dtf <- readRDS(here::here("rds_data", "dtf.Rds"))
+```
+
+I realised the other day that it would be fine to call a dataframe `dtf` instead of boring old `df` :smirk:...
+
+```{r, dtf-tweet, echo = FALSE}
+tweetrmd::include_tweet("https://twitter.com/ludictech/status/1338815874770329602?s=20")
+```
+
+```{r, glimpse-dtf}
+glimpse(dtf)
+
+```
+
+
+So let's lick this dataframe into shape so it's ready for visualising.
+
+
+
+
+
+.
+
+.
+
+.
+
+.
+
+
+
+You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
