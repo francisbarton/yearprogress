@@ -39,8 +39,6 @@ library(yearprogress)
 ```
 
 ```{css, echo = FALSE}
-<style type="text/css">
-  
   body {
     font-family: "IBM Plex Sans", "Noto Sans", "Cabin", "Calibri", "Arial", sans-serif;
     color: #080c08;
@@ -75,8 +73,6 @@ library(yearprogress)
     border: 2px solid #080c08;
     margin: 2rem 0;
   }
-  
-</style>
 ```
 
 <!-- badges: start -->
