@@ -3,42 +3,6 @@ Looking at tweets by @year\_progress 2019-2020
 December 19, 2020
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<style type="text/css">
-  body {
-    font-family: "IBM Plex Sans", "Noto Sans", "Cabin", "Calibri", "Arial", sans-serif;
-    color: #080c08;
-  }
-  
-  #flow > * + * {
-    margin-top: 1.5rem;
-  }
-  
-  h1 {
-    border-bottom: 4px solid #66CDAA;
-  }
-  
-  p, li {
-    font-size: 20px;
-  }
-  
-  a, a:active, a:hover {
-    text-decoration: solid 2px underline currentcolor;
-  }
-  
-  code, .sourceCode {
-    font-family: "IBM Plex Mono", "Hasklig", "Inconsolata", "Liberation Mono", "Consolas", monospace;
-    border: 1px dotted #CDC1C5;
-  }
-  
-  .sourceCode > .sourceCode {
-    border: 0
-  }
-  
-  img {
-    border: 2px solid #080c08;
-    margin: 2rem 0;
-  }
-</style>
 <!-- badges: start -->
 <!-- badges: end -->
 
@@ -134,7 +98,8 @@ glimpse(dtf)
 #> $ created_at    <chr> "2020-12-17T09:00:07.000Z", "2020-12-13T17:00:04.000Z...
 ```
 
-So let’s lick this dataframe into shape so it’s ready for visualising.
+Let’s lick this dataframe into shape :icecream: so it’s ready for
+visualising.
 
 ``` r
 dtf2 <- dtf %>% 
@@ -168,7 +133,15 @@ dtf2 %>%
   ggplot(aes(yday, retweet_count)) +
   geom_line(aes(colour = year), size = 0.6, alpha = 1, linetype = "f111") +
   geom_point(aes(fill = year), stroke = NA, shape = 21, size = 1) +
-  geom_label(aes(label = label), vjust = "outward", hjust = "inward", nudge_y = 0.05, fill = "aquamarine3", colour = "white", size = 3, fontface = "bold") +
+  geom_label(
+    aes(label = label),
+    vjust = "outward",
+    hjust = "inward",
+    nudge_y = 0.05,
+    fill = "aquamarine3",
+    colour = "white",
+    size = 3,
+    fontface = "bold") +
   scale_fill_brewer("Year", palette = "Set2") +
   scale_colour_brewer("Year", palette = "Set2") +
   scale_y_log10() +
