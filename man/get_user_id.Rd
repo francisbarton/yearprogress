@@ -13,5 +13,5 @@ get_user_id(username)
 the user ID as a string (check! might be as a numeric!)
 }
 \description{
-Get a twitter user ID for a twitter username
+Use the Twitter API to find the User ID for a given Twitter username
 }

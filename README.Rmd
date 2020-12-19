@@ -6,7 +6,7 @@ output:
   github_document:
     html_preview: true
     toc: false
-    fig_width: 5
+    fig_width: 9
     fig_height: 5
     md_extensions: +emoji+bracketed_spans+inline_notes
 keywords: [lubridate, ggplot, twitter, api, dataviz]
@@ -19,18 +19,69 @@ always_allow_html: true
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
+  dev = "ragg_png",
+  fig.showtext = TRUE,
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
 
-
+library(here)
 library(dplyr)
+library(extrafont)
+library(ggplot2)
+library(ggthemr)
+library(lubridate)
+library(purrr)
+library(stringr)
+library(tweetrmd)
+library(yearprogress)
 
 ```
+
+
+<style type="text/css">
+  
+  body {
+    font-family: "IBM Plex Sans", "Noto Sans", "Cabin", "Calibri", "Arial", sans-serif;
+    color: #080c08;
+  }
+  
+  #flow > * + * {
+    margin-top: 1.5rem;
+  }
+  
+  h1 {
+    border-bottom: 4px solid #66CDAA;
+  }
+  
+  p, li {
+    font-size: 20px;
+  }
+  
+  a, a:active, a:hover {
+    text-decoration: solid 2px underline currentcolor;
+  }
+  
+  code, .sourceCode {
+    font-family: "IBM Plex Mono", "Hasklig", "Inconsolata", "Liberation Mono", "Consolas", monospace;
+    border: 1px dotted #CDC1C5;
+  }
+  
+  .sourceCode > .sourceCode {
+    border: 0
+  }
+  
+  img {
+    border: 2px solid #080c08;
+    margin: 2rem 0;
+  }
+  
+</style>
 
 <!-- badges: start -->
 <!-- badges: end -->
 
+:::{#flow}
 
 I was randomly interested in whether there might be patterns in the amount of interaction with tweets from the **@year_progress** bot during 2020 :scream:,
 and what the shape of the year might look like compared to 2019.
@@ -52,8 +103,8 @@ It's also chance for me to try various other things I haven't really used before
   instead of my usual `.md`, so I might incorporate some output charts
 * Using a couple of [Pandoc's Markdown extensions][pdmd] ^[1][1]^
 * GitHub Actions (set up using the `usethis` helper function)
-* Making _a whole actual package_ :package:, just for a little bit of fun like
-  this
+* Making _a whole actual package_ :package: just for a little bit of fun like
+  this, as opposed to as some bigger project
 * Learning a bit more about testing with `testthat`
 * Yet more practice at package architecture and requirements,
   and appeasing R CMD check
@@ -80,8 +131,7 @@ you would be correct.
 # It isn't going to change, so once obtained just hardcode it:
 year_progress_id <- "3233484298"
 
-
-start_2019 <- "2019-01-01T00:00:00Z"
+start_2019 <- "2019-01-01T00:00:02Z"
 
 # This doesn't work with the Twitter API
 # https://github.com/tidyverse/lubridate/issues/941
@@ -92,7 +142,7 @@ start_2019 <- "2019-01-01T00:00:00Z"
 
 # see `R/get_user_twetes.R` for how this works
 dtf <- get_user_twetes(user_id = year_progress_id, start = start_2019) %>%
-  compact() %>%
+  purrr::compact() %>%
   unpack_list()       # <- in `R/helpers.R`
 ```
 
@@ -105,7 +155,7 @@ dtf <- readRDS(here::here("rds_data", "dtf.Rds"))
 
 I realised the other day that it would be fine to call a dataframe `dtf` instead of boring old `df` :smirk:...
 
-```{r, dtf-tweet, echo = FALSE}
+```{r, dtf-tweet, echo = FALSE, cache = TRUE}
 tweetrmd::include_tweet("https://twitter.com/ludictech/status/1338815874770329602?s=20")
 ```
 
@@ -118,17 +168,62 @@ glimpse(dtf)
 So let's lick this dataframe into shape so it's ready for visualising.
 
 
+```{r, prepare-dtf}
+
+dtf2 <- dtf %>% 
+  # filter out any "normal" tweets!
+  # filter(!stringr::str_detect(text, "^([:alnum:]|[:punct:])+")) %>% 
+  filter(stringr::str_detect(text, "^(\u2591|\u2593)+")) %>% 
+  mutate(pcnt = as.numeric(stringr::str_extract(text, "[0-9]+"))) %>% 
+  mutate(date_tweeted = case_when(
+    # 100% tweets get tweeted just _after_ midnight on 1st Jan: need correcting
+    # be better here to *check* if date == January 1 but OK for now
+    pcnt == 100 ~ lubridate::as_date(created_at) - lubridate::period(1, "days"),
+    TRUE ~ lubridate::as_date(created_at)
+  )) %>% 
+  mutate(year = lubridate::year(date_tweeted)) %>% 
+  mutate(yday = lubridate::yday(date_tweeted)) %>% 
+  mutate(wkdy = weekdays(lubridate::as_date(date_tweeted))) %>% 
+  # NB 2018 is hard-coded here, needs changing if working with different years
+  # filter(!year == 2018) %>% 
+  # select(!c(id, text, created_at)) %>% 
+  mutate(across(c(year, wkdy), ~ as.factor(.)))
+
+```
+
+```{r, ggthemr-set, echo = FALSE}
+ggthemr::ggthemr(palette = "solarized", layout = "clean", type = "outer")
+# ggthemr::ggthemr_reset()
+
+theme_update(
+  text = element_text(family = "IBM Plex Sans", colour = "#080c08")
+)
+
+```
+
+Let's look at how retweets vary through the year:
+
+```{r, plot-retweets, warning = FALSE, message = FALSE}
+dtf2 %>% 
+  filter(year == 2019) %>% 
+  slice_max(n = 4, order_by = retweet_count) %>% 
+  mutate(label = glue::glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  left_join(dtf2, .) %>% 
+  ggplot(aes(yday, retweet_count)) +
+  geom_line(aes(colour = year), size = 0.6, alpha = 1, linetype = "f111") +
+  geom_point(aes(fill = year), stroke = NA, shape = 21, size = 1) +
+  geom_label(aes(label = label), vjust = "outward", hjust = "inward", nudge_y = 0.05, fill = "aquamarine3", colour = "white", size = 3, fontface = "bold") +
+  scale_fill_brewer("Year", palette = "Set2") +
+  scale_colour_brewer("Year", palette = "Set2") +
+  scale_y_log10() +
+  labs(
+    x = "Day of the year",
+    y = "Number of retweets",
+    title = "RTs of @year_progress tweets, 2019-2020"
+  )
+  
+
+```
 
 
-
-.
-
-.
-
-.
-
-.
-
-
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
+:::

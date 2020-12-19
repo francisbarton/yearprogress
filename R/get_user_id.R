@@ -1,13 +1,14 @@
 #' Get a twitter user ID for a twitter username
 #'
-#' @param username Twitter username as a string (no \code{@} required)
+#' Use the Twitter API to find the User ID for a given Twitter username
 #'
+#' @param username Twitter username as a string (no \code{@} required)
 #'
 #' @importFrom httr GET add_headers content
 #' @importFrom purrr pluck
 #'
-#'
 #' @return the user ID as a string (check! might be as a numeric!)
+#' @export
 
 
 

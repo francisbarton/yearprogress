@@ -15,5 +15,5 @@ get_user_twetes(user_id, start)
 list of tweet data
 }
 \description{
-Setup script to retrieve tweets
+This is a parent script to \code{get_twetes.R}. Here we set the desired fields to return, set up the specific endpoint for the user id we are interested in, deal with authentication and create a query to send to the API.
 }

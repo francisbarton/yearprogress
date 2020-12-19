@@ -13,5 +13,5 @@ unpack_list(lst)
 a tibble
 }
 \description{
-Tidying helper function: rectangularises a nested list
+Turns the list data from the Twitter API into a rectangular tibble
 }
