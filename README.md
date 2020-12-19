@@ -4,8 +4,6 @@ December 19, 2020
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <style type="text/css">
-<style type="text/css">
-  
   body {
     font-family: "IBM Plex Sans", "Noto Sans", "Cabin", "Calibri", "Arial", sans-serif;
     color: #080c08;
@@ -40,8 +38,6 @@ December 19, 2020
     border: 2px solid #080c08;
     margin: 2rem 0;
   }
-  
-</style>
 </style>
 <!-- badges: start -->
 <!-- badges: end -->
