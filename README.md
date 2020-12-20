@@ -56,14 +56,13 @@ would be correct.
 # It isn't going to change, so once obtained just hardcode it:
 year_progress_id <- "3233484298"
 
-start_2019 <- "2019-01-01T00:00:02Z"
-
 # This doesn't work with the Twitter API
 # https://github.com/tidyverse/lubridate/issues/941
-# 
 # start_2019 <- lubridate::make_datetime(2019) %>% 
 #   lubridate::format_ISO8601(usetz = TRUE)
+# so instead:
 
+start_2019 <- "2019-01-01T00:00:02Z"
 
 # see `R/get_user_twetes.R` for how this works
 dtf <- get_user_twetes(user_id = year_progress_id, start = start_2019) %>%
@@ -104,17 +103,16 @@ visualising.
 ``` r
 dtf2 <- dtf %>% 
   # filter out any "normal" tweets!
-  filter(stringr::str_detect(text, "^(\u2591|\u2593)+")) %>% 
-  mutate(pcnt = as.numeric(stringr::str_extract(text, "[0-9]+"))) %>% 
+  filter(str_detect(text, "^(\u2591|\u2593)+")) %>% 
+  mutate(pcnt = as.numeric(str_extract(text, "[0-9]+"))) %>% 
   mutate(date_tweeted = case_when(
     # 100% tweets get tweeted just _after_ midnight on 1st Jan: need correcting
     # Be better here to check *if* date == January 1 but OK for now
-    pcnt == 100 ~ lubridate::as_date(created_at) - lubridate::period(1, "days"),
-    TRUE ~ lubridate::as_date(created_at)
-  )) %>% 
-  mutate(year = lubridate::year(date_tweeted)) %>% 
-  mutate(yday = lubridate::yday(date_tweeted)) %>% 
-  mutate(wkdy = weekdays(lubridate::as_date(date_tweeted))) %>% 
+    pcnt == 100 ~ as_date(created_at) - period(1, "days"),
+    TRUE ~ as_date(created_at))) %>% 
+  mutate(year = year(date_tweeted)) %>% 
+  mutate(yday = yday(date_tweeted)) %>% 
+  mutate(wkdy = weekdays(as_date(date_tweeted))) %>% 
   mutate(across(c(year, wkdy), ~ as.factor(.)))
 ```
 
@@ -124,7 +122,7 @@ Let’s look at how retweets vary through the year:
 dtf2 %>% 
   filter(year == 2019) %>% 
   slice_max(n = 4, order_by = retweet_count) %>% 
-  mutate(label = glue::glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  mutate(label = str_glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf2, .) %>% 
   ggplot(aes(yday, retweet_count)) +
   geom_line(aes(colour = year), size = 0.6, alpha = 1,) +
@@ -166,14 +164,13 @@ Let’s see if the numbers of likes for each tweet show a similar pattern
 dtf3 <- dtf2 %>% 
   filter(year == 2019) %>% 
   slice_max(n = 4, order_by = like_count) %>% 
-  mutate(label_2019 = glue::glue(
-    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  mutate(label_2019 = str_glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf2, .)
+
 dtf3 %>% 
   filter(year == 2020) %>% 
   slice_max(n = 4, order_by = like_count) %>% 
-  mutate(label_2020 = glue::glue(
-    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  mutate(label_2020 = str_glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf3, .) %>% 
   mutate(like_count = like_count/1000) %>% 
   ggplot(aes(yday, like_count)) +
@@ -184,8 +181,7 @@ dtf3 %>%
     vjust = "outward",
     hjust = "inward",
     nudge_y = 0.1,
-    fill = "chocolate2",
-    # fill = "sienna1",
+    fill = "aquamarine3",
     colour = "white",
     size = 3,
     fontface = "bold") +
@@ -194,11 +190,11 @@ dtf3 %>%
     vjust = "outward",
     hjust = "inward",
     nudge_y = 0.1,
-    fill = "aquamarine3",
+    fill = "chocolate2",
     colour = "white",
     size = 3,
     fontface = "bold") +
-  scale_colour_brewer("Year", palette = "Set2", direction = -1) +
+  scale_colour_brewer("Year", palette = "Set2") +
   scale_y_log10() +
   labs(
     x = "Day of the year",
@@ -215,14 +211,13 @@ And quote tweets:
 dtf3 <- dtf2 %>% 
   filter(year == 2019) %>% 
   slice_max(n = 4, order_by = quote_count) %>% 
-  mutate(label_2019 = glue::glue(
-    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  mutate(label_2019 = str_glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf2, .)
+
 dtf3 %>% 
   filter(year == 2020) %>% 
   slice_max(n = 4, order_by = quote_count) %>% 
-  mutate(label_2020 = glue::glue(
-    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  mutate(label_2020 = str_glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf3, .) %>% 
   # mutate(quote_count = quote_count/1000) %>% 
   ggplot(aes(yday, quote_count)) +
@@ -233,8 +228,7 @@ dtf3 %>%
     vjust = "outward",
     hjust = "inward",
     nudge_y = 0.1,
-    fill = "chocolate2",
-    # fill = "sienna1",
+    fill = "aquamarine3",
     colour = "white",
     size = 3,
     fontface = "bold") +
@@ -243,11 +237,11 @@ dtf3 %>%
     vjust = "outward",
     hjust = "inward",
     nudge_y = 0.1,
-    fill = "aquamarine3",
+    fill = "chocolate2",
     colour = "white",
     size = 3,
     fontface = "bold") +
-  scale_colour_brewer("Year", palette = "Set2", direction = -1) +
+  scale_colour_brewer("Year", palette = "Set2") +
   scale_y_log10() +
   labs(
     x = "Day of the year",
@@ -257,5 +251,17 @@ dtf3 %>%
 ```
 
 <img src="man/figures/README-plot-quotes-1.png" width="100%" />
+
+Now, am I imagining it, or is there a much higher proportional
+difference between 2019 and 2020 when it comes to the QTs, than was
+visible with the RTs and the Likes? From about day 80? There’s some
+quite big gaps in there between the two lines, particularly if you look
+at the period between day 80 and day 200. 2020 never drops down below
+100 QTs for any tweet like 2019 did.
+
+The gap is a bit less noticeable in the 70-percents, around day 270-280,
+when 2019’s figures start to pick up as the end of the year approaches.
+Again, some of this may just be a factor of more people following the
+account, and RTs and QTs generate more follows and so it goes round.
 
 </div>
