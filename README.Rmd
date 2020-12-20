@@ -46,44 +46,6 @@ library(yearprogress)
 
 ```
 
-```{css, echo = FALSE, eval = FALSE}
-  body {
-    font-family: "IBM Plex Sans", "Noto Sans", "Calibri", sans-serif;
-    color: #080c08;
-  }
-  
-  #flow > * + * {
-    margin-top: 1.5rem;
-  }
-  
-  h1 {
-    border-bottom: 4px solid #66CDAA;
-  }
-  
-  p, li {
-    font-size: 20px;
-  }
-  
-  a, a:active, a:hover {
-    text-decoration: solid 2px underline currentcolor;
-  }
-  
-  code, .sourceCode {
-    font-family: "IBM Plex Mono", "Inconsolata", "Liberation Mono", 
-      "Consolas", monospace;
-    border: 1px dotted #CDC1C5;
-  }
-  
-  .sourceCode > .sourceCode {
-    border: 0
-  }
-  
-  img {
-    border: 2px solid #080c08;
-    margin: 2rem 0;
-  }
-```
-
 <!-- badges: start -->
 <!-- badges: end -->
 

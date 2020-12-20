@@ -262,6 +262,9 @@ at the period between day 80 and day 200. 2020 never drops down below
 The gap is a bit less noticeable in the 70-percents, around day 270-280,
 when 2019’s figures start to pick up as the end of the year approaches.
 Again, some of this may just be a factor of more people following the
-account, and RTs and QTs generate more follows and so it goes round.
+account, and RTs and QTs generate more follows, and so it goes round.
+
+I’ll be interested to see what happens to 2020’s final few data points
+in the closing days of December.
 
 </div>
