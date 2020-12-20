@@ -1,6 +1,6 @@
 Looking at tweets by @year\_progress 2019-2020
 ================
-December 19, 2020
+December 20, 2020
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
@@ -104,21 +104,17 @@ visualising.
 ``` r
 dtf2 <- dtf %>% 
   # filter out any "normal" tweets!
-  # filter(!stringr::str_detect(text, "^([:alnum:]|[:punct:])+")) %>% 
   filter(stringr::str_detect(text, "^(\u2591|\u2593)+")) %>% 
   mutate(pcnt = as.numeric(stringr::str_extract(text, "[0-9]+"))) %>% 
   mutate(date_tweeted = case_when(
     # 100% tweets get tweeted just _after_ midnight on 1st Jan: need correcting
-    # be better here to *check* if date == January 1 but OK for now
+    # Be better here to check *if* date == January 1 but OK for now
     pcnt == 100 ~ lubridate::as_date(created_at) - lubridate::period(1, "days"),
     TRUE ~ lubridate::as_date(created_at)
   )) %>% 
   mutate(year = lubridate::year(date_tweeted)) %>% 
   mutate(yday = lubridate::yday(date_tweeted)) %>% 
   mutate(wkdy = weekdays(lubridate::as_date(date_tweeted))) %>% 
-  # NB 2018 is hard-coded here, needs changing if working with different years
-  # filter(!year == 2018) %>% 
-  # select(!c(id, text, created_at)) %>% 
   mutate(across(c(year, wkdy), ~ as.factor(.)))
 ```
 
@@ -131,27 +127,135 @@ dtf2 %>%
   mutate(label = glue::glue("{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
   left_join(dtf2, .) %>% 
   ggplot(aes(yday, retweet_count)) +
-  geom_line(aes(colour = year), size = 0.6, alpha = 1, linetype = "f111") +
-  geom_point(aes(fill = year), stroke = NA, shape = 21, size = 1) +
+  geom_line(aes(colour = year), size = 0.6, alpha = 1,) +
+  geom_point(aes(colour = year), size = 1) +
   geom_label(
     aes(label = label),
     vjust = "outward",
     hjust = "inward",
-    nudge_y = 0.05,
+    nudge_y = 0.1,
     fill = "aquamarine3",
     colour = "white",
     size = 3,
     fontface = "bold") +
-  scale_fill_brewer("Year", palette = "Set2") +
   scale_colour_brewer("Year", palette = "Set2") +
   scale_y_log10() +
   labs(
     x = "Day of the year",
-    y = "Number of retweets",
-    title = "RTs of @year_progress tweets, 2019-2020"
+    y = "Number of retweets (log scale)",
+    title = "RTs of @year_progress tweets, 2019 vs. 2020"
   )
 ```
 
 <img src="man/figures/README-plot-retweets-1.png" width="100%" />
+
+Certain tweets are vastly more popular than the rest, with four tweets
+standing out as peaks - even when a log scale is employed on the y axis.
+The next tranche of popularity is reserved for the multiples of 10%,
+apart from 50% which is already one of the top four retweeted.
+
+There doesn’t seem to be a particularly different trend affecting the
+popularity of tweets or the pattern of retweets as 2020 has progressed,
+relative to 2019. 2020 numbers are generally a little higher, which is
+most likely due to the account having acquired more followers over time.
+
+Let’s see if the numbers of likes for each tweet show a similar pattern
+(we’d generally expect them to):
+
+``` r
+dtf3 <- dtf2 %>% 
+  filter(year == 2019) %>% 
+  slice_max(n = 4, order_by = like_count) %>% 
+  mutate(label_2019 = glue::glue(
+    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  left_join(dtf2, .)
+dtf3 %>% 
+  filter(year == 2020) %>% 
+  slice_max(n = 4, order_by = like_count) %>% 
+  mutate(label_2020 = glue::glue(
+    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  left_join(dtf3, .) %>% 
+  mutate(like_count = like_count/1000) %>% 
+  ggplot(aes(yday, like_count)) +
+  geom_line(aes(colour = year), size = 0.6, alpha = 1) +
+  geom_point(aes(colour = year), size = 1) +
+  geom_label(
+    aes(label = label_2019),
+    vjust = "outward",
+    hjust = "inward",
+    nudge_y = 0.1,
+    fill = "chocolate2",
+    # fill = "sienna1",
+    colour = "white",
+    size = 3,
+    fontface = "bold") +
+  geom_label(
+    aes(label = label_2020),
+    vjust = "outward",
+    hjust = "inward",
+    nudge_y = 0.1,
+    fill = "aquamarine3",
+    colour = "white",
+    size = 3,
+    fontface = "bold") +
+  scale_colour_brewer("Year", palette = "Set2", direction = -1) +
+  scale_y_log10() +
+  labs(
+    x = "Day of the year",
+    y = "Number of likes ('000s) (log scale)",
+    title = "\"Likes\" of @year_progress tweets, 2019 vs. 2020"
+  )
+```
+
+<img src="man/figures/README-plot-likes-1.png" width="100%" />
+
+And quote tweets:
+
+``` r
+dtf3 <- dtf2 %>% 
+  filter(year == 2019) %>% 
+  slice_max(n = 4, order_by = quote_count) %>% 
+  mutate(label_2019 = glue::glue(
+    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  left_join(dtf2, .)
+dtf3 %>% 
+  filter(year == 2020) %>% 
+  slice_max(n = 4, order_by = quote_count) %>% 
+  mutate(label_2020 = glue::glue(
+    "{format(date_tweeted, '%b %d')}: {pcnt}%")) %>% 
+  left_join(dtf3, .) %>% 
+  # mutate(quote_count = quote_count/1000) %>% 
+  ggplot(aes(yday, quote_count)) +
+  geom_line(aes(colour = year), size = 0.6, alpha = 1) +
+  geom_point(aes(colour = year), size = 1) +
+  geom_label(
+    aes(label = label_2019),
+    vjust = "outward",
+    hjust = "inward",
+    nudge_y = 0.1,
+    fill = "chocolate2",
+    # fill = "sienna1",
+    colour = "white",
+    size = 3,
+    fontface = "bold") +
+  geom_label(
+    aes(label = label_2020),
+    vjust = "outward",
+    hjust = "inward",
+    nudge_y = 0.1,
+    fill = "aquamarine3",
+    colour = "white",
+    size = 3,
+    fontface = "bold") +
+  scale_colour_brewer("Year", palette = "Set2", direction = -1) +
+  scale_y_log10() +
+  labs(
+    x = "Day of the year",
+    y = "Number of quote-tweets (log scale)",
+    title = "Quotes of @year_progress tweets, 2019 vs. 2020"
+  )
+```
+
+<img src="man/figures/README-plot-quotes-1.png" width="100%" />
 
 </div>
