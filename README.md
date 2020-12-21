@@ -4,6 +4,7 @@ December 20, 2020
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
+![R-CMD-check](https://github.com/francisbarton/yearprogress/workflows/R-CMD-check/badge.svg?branch=main)
 <!-- badges: end -->
 
 <div id="flow">
