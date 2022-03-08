@@ -2,8 +2,6 @@
 #'
 #' This is a parent script to \code{get_twetes.R}. Here we set the desired fields to return, set up the specific endpoint for the user id we are interested in, deal with authentication and create a query to send to the API.
 #'
-#' @importFrom stringr str_c
-#'
 #' @param user_id Twitter user ID as a string
 #' @param start Start date - from when to retrieve tweet data. Needs to be in a particular ISO8601 format like \code{YYYY-MM-DDTHH:mm:ssZ} (check this!)
 #'
@@ -38,7 +36,7 @@ get_user_twetes <- function(user_id, start) {
 
   api_query <- list(
     start_time = start,
-    tweet.fields = str_c(return_fields, collapse = ","),
+    tweet.fields = stringr::str_c(return_fields, collapse = ","),
     max_results = 100
   )
 

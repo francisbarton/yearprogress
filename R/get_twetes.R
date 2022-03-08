@@ -7,16 +7,13 @@
 #' @param api_query query to send to the API
 #' @param lst default NULL. Data accumulated so far, to be kept
 #'
-#' @importFrom purrr pluck flatten
-#' @importFrom httr GET content status_code stop_for_status add_headers
-#'
 #' @return list of tweet data
 
 # internal child function (does loops as necessary)
 get_twetes <- function(endpoint, token_header, api_query, lst = NULL) {
-  return <- GET(
+  return <- httr::GET(
     endpoint,
-    add_headers(token_header),
+    httr::add_headers(token_header),
     query = api_query
   )
 
@@ -26,21 +23,21 @@ get_twetes <- function(endpoint, token_header, api_query, lst = NULL) {
   # httr::warn_for_status(return)
 
   # if query is good then extract content using httr
-  if (status_code(return) == 200) {
-    return_content <- content(return)
+  if (httr::status_code(return) == 200) {
+    return_content <- httr::content(return)
 
     # extract data from query response content...
     content_data <- return_content %>%
-      pluck("data")
+      purrr::pluck("data")
 
     # ...and combine with data from previous queries, if any
     if (!is.null(lst)) {
-      content_data <- flatten(list(lst, content_data))
+      content_data <- purrr::flatten(list(lst, content_data))
     }
 
     # check for pagination token (means more data to come)
     next_token <- return_content %>%
-      pluck("meta", "next_token")
+      purrr::pluck("meta", "next_token")
 
     # if there isn't a token then return the data we've gathered
     if (is.null(next_token)) {
